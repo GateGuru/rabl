@@ -32,9 +32,11 @@ module Rabl
       options = options.reverse_merge(@_options)
       data = data_object(@_data)
       if is_object?(data) || !data # object @user
+        options[:root] = true if @_data.is_a?(Hash)
         Rabl::Builder.new(@_data, options).to_hash(options)
       elsif is_collection?(data) # collection @users
         object_name = @_child_root || data_name(@_data).to_s.singularize # @users => :users
+        options[:root] = true if @_child_root
         data.map { |object| Rabl::Builder.new({ object => object_name }, options).to_hash(options) }
       end
     end
@@ -79,7 +81,7 @@ module Rabl
     # collection @users => :people
     # collection @users, :child_root => :person # Rename each child to person, enclose in single array
     def collection(data, options = {})
-      @_collection_name = data.values.first if data.respond_to?(:each_pair)
+      @_collection_name = data.values.first if data.respond_to?(:each_pair)      
       @_child_root = options[:child_root] if options[:child_root]
       self.object(data_object(data).to_a) if data
     end
